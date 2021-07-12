@@ -15,6 +15,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
+import model.services.DepartmentService;
 
 public class MainViewControler implements Initializable {
 
@@ -32,9 +33,9 @@ public class MainViewControler implements Initializable {
 		System.out.println("onMenuItemSellerAction ");
 	}
 
-	@FXML
+	@FXML //MACETE TEMPORARIO, IREI VOLTAR AO PADRAO COM APENAS 1 LOAD VIEW
 	public void onMenuItemDepartmentAction() {
-		loadView("/gui/DepartmentList.fxml");
+		loadView2("/gui/DepartmentList.fxml");
 	}
 
 	@FXML
@@ -77,4 +78,40 @@ public class MainViewControler implements Initializable {
 			Alerts.showAlert("IOException", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
 	}
+	
+		
+	public synchronized void loadView2(String absoluteName) {
+
+		try {
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			VBox newVbox = loader.load();
+			
+			Scene mainScene = Main.getMainScene();
+			
+			/*getRoot pega o primeiro elemento(ScroolPane) da view principal(MainView)
+			.getContent pega o conteúdo(VBox)do ScroolPane */
+			VBox mainVbox =(VBox) ((ScrollPane) mainScene.getRoot()).getContent(); 
+			
+			/*.getChildren vai pegar o primeiro filho do mainVbox que é o <menu> da MainView
+			 * e atribuir ao mainMenu*/
+			Node mainMenu = mainVbox.getChildren().get(0);
+			
+			//apaga todos os filhos do VBox da MainView
+			mainVbox.getChildren().clear();
+			
+			//adiciona barra de menu ao main vbox, pois a barra deve ser preservada
+			mainVbox.getChildren().add(mainMenu);
+			
+			//adiciona ao VBox da view principal(MainView) os filhos do newVbox
+			mainVbox.getChildren().addAll(newVbox.getChildren());
+		
+			DepartmentListController controller = loader.getController();
+			controller.setDepartmentService(new DepartmentService());
+			controller.updateTableView();
+			
+		} catch (IOException e) {
+			Alerts.showAlert("IOException", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
+	}
+
 }
