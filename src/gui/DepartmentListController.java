@@ -1,18 +1,27 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import application.Main;
+import gui.util.Alerts;
+import gui.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
@@ -38,9 +47,14 @@ public class DepartmentListController implements Initializable {
 	@FXML//
 	private ObservableList<Department> obsList;
 
-	@FXML
-	public void onBtNewAction() {
-		System.out.println("onBtNewAction");
+	@FXML/*ActionEvent FORNECE UMA REFERÊNCIA PARA O CONTROLE QUE RECEBEU O EVENTO,
+	A PARTIR DESSE EVENT TEREI CONDIÇÃO DE ACESSAR O STAGE QUE GEROU O NOVO PALCO
+ 	UTILIZANDO A FUNÇÃO DA CLASSE Utils*/
+	public void onBtNewAction(ActionEvent event) {
+		Stage parentStage = Utils.currentStage(event);	
+		/*CHAMA O METODO QUE CRIA UM NOVO PALCO(STAGE) PASSANDO O CAMINHO DA VIEW
+		 * E O STAGE QUE RECEBEU O EVENTO PARA GERAR UM NOVO STAGE*/
+		createDialogForm("/gui/DepartmentForm.fxml",parentStage);
 	}
 
 	public void setDepartmentService(DepartmentService service) {
@@ -77,5 +91,28 @@ public class DepartmentListController implements Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 		initializeNodes();
 	}
-
+	
+	/*É NECESSARIO PASSAR COMO PARÂMETRO UMA REFERÊNCIA PARA O STAGE DA JANELA QUE CRIOU A JANELA
+	 *DE DIALOGO*/
+	private void createDialogForm(String absoluteName, Stage parentStage) {
+		try {
+			 FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
+			 Pane pane = loader.load();//INSTANCIANDO UMA JANELA TIPO PANE
+			 
+			 /*PARA CARREGAR UMA JANELA DE DIALOGO MODAL NA FRENTE DA JANELA EXISTENTE É 
+			  * NECESSÁRIO INSTANCIAR UM NOVO STAGE. ASSIM O RESULTADO SERÁ UMA JANELA SOBRE A OUTRA.
+			  *JANELA MODAL NÃO PERMITE ITERAÇÃO COM OUTRAS JANELAS ENQUANTO A JANELA MODAL NÃO
+			  * FOR FECHADA */
+			 Stage dialogStage = new Stage();
+			 dialogStage.setTitle("Enter department data");
+			 dialogStage.setScene(new Scene(pane));
+			 dialogStage.setResizable(false);//DIZ SE A JANELA PODE OU NÃO SER REDIMENSIONADA
+			 dialogStage.initOwner(parentStage);//DIZ QUAL É A JANELA PAI DA JANELA DIALOGSTAGE 
+			 dialogStage.initModality(Modality.WINDOW_MODAL);// DIZ SE A JANELA É MODAL OU NÃO
+			 dialogStage.showAndWait();
+		}
+		catch(IOException e) {
+			Alerts.showAlert("IO Exception","Error loading view",e.getMessage(), AlertType.ERROR);
+		}
+	}
 }
