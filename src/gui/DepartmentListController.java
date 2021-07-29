@@ -109,6 +109,7 @@ public class DepartmentListController implements Initializable {
 			 OBS: O OBJ INSTANCIADO SERVE TANTO PARA ADD UM NOVO OBJ QUANTO PARA ATUALIZAR OS DADOS
 			 DE UM DEP EXISTENTE*/
 			 controller.setEntity(obj);
+			 controller.setDepartmentService(new DepartmentService());
 			 controller.updateFormData();
 			 
 			 /*PARA CARREGAR UMA JANELA DE DIALOGO MODAL NA FRENTE DA JANELA EXISTENTE É 
