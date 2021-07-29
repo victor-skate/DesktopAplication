@@ -54,7 +54,10 @@ public class DepartmentListController implements Initializable {
 		Stage parentStage = Utils.currentStage(event);	
 		/*CHAMA O METODO QUE CRIA UM NOVO PALCO(STAGE) PASSANDO O CAMINHO DA VIEW
 		 * E O STAGE QUE RECEBEU O EVENTO PARA GERAR UM NOVO STAGE*/
-		createDialogForm("/gui/DepartmentForm.fxml",parentStage);
+		Department obj = new Department();
+		//OBJ É PASSADO COMO PARAMETRO PARA RECEBER OS DADOS DO FORMULARIO, SEJA PARA ATUALIZAR OU
+		//ADICIONAR UM NOVO DEPARTAMENTO
+		createDialogForm(obj,"/gui/DepartmentForm.fxml",parentStage);
 	}
 
 	public void setDepartmentService(DepartmentService service) {
@@ -94,10 +97,19 @@ public class DepartmentListController implements Initializable {
 	
 	/*É NECESSARIO PASSAR COMO PARÂMETRO UMA REFERÊNCIA PARA O STAGE DA JANELA QUE CRIOU A JANELA
 	 *DE DIALOGO*/
-	private void createDialogForm(String absoluteName, Stage parentStage) {
+	private void createDialogForm(Department obj, String absoluteName, Stage parentStage) {
 		try {
 			 FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName));
 			 Pane pane = loader.load();//INSTANCIANDO UMA JANELA TIPO PANE
+			 
+			 //PEGA O CONTROLE DO CONTROLADOR DE FORMULARIO DE DEPARTAMENTO 
+			 DepartmentFormController controller = loader.getController();
+			
+			 /*ADICIONA NAS CAIXAS DE TEXTO DO FORMULÁRIO OS DADOS DO OBJETO INSTANCIADO.
+			 OBS: O OBJ INSTANCIADO SERVE TANTO PARA ADD UM NOVO OBJ QUANTO PARA ATUALIZAR OS DADOS
+			 DE UM DEP EXISTENTE*/
+			 controller.setEntity(obj);
+			 controller.updateFormData();
 			 
 			 /*PARA CARREGAR UMA JANELA DE DIALOGO MODAL NA FRENTE DA JANELA EXISTENTE É 
 			  * NECESSÁRIO INSTANCIAR UM NOVO STAGE. ASSIM O RESULTADO SERÁ UMA JANELA SOBRE A OUTRA.
