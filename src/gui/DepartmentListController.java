@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import application.Main;
+import gui.listner.DataChangeListner;
 import gui.util.Alerts;
 import gui.util.Utils;
 import javafx.collections.FXCollections;
@@ -26,7 +27,7 @@ import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
 
-public class DepartmentListController implements Initializable {
+public class DepartmentListController implements Initializable,DataChangeListner {
 
 	private DepartmentService service;
 
@@ -110,6 +111,10 @@ public class DepartmentListController implements Initializable {
 			 DE UM DEP EXISTENTE*/
 			 controller.setEntity(obj);
 			 controller.setDepartmentService(new DepartmentService());
+			 //ADICIONA ESSA CLASSE A LISTA DE OUVINTES, OU SEJA, QUANDO HOUVER MUDANÇAS 
+			 //ESSA CLASSE CHAMA O METODO updateTableView QUE ATUALIZA A LISTA DE DEPARTAMENTOS
+			 //ASSIM QUE ADICIONAR UM NOVO DEPARTAMENTO
+			 controller.subscribeDataChangeListner(this);
 			 controller.updateFormData();
 			 
 			 /*PARA CARREGAR UMA JANELA DE DIALOGO MODAL NA FRENTE DA JANELA EXISTENTE É 
@@ -127,5 +132,10 @@ public class DepartmentListController implements Initializable {
 		catch(IOException e) {
 			Alerts.showAlert("IO Exception","Error loading view",e.getMessage(), AlertType.ERROR);
 		}
+	}
+
+	@Override //IMPLEMENTAÇÃO DO METODO ABSTRATO DA CLASSE ABSTRATA DataChangeListner.
+	public void onDataChange() {
+		updateTableView();
 	}
 }
