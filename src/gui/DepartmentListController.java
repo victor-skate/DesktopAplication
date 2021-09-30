@@ -3,9 +3,11 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 import application.Main;
+import db.DbIntegrityException;
 import gui.listner.DataChangeListner;
 import gui.util.Alerts;
 import gui.util.Utils;
@@ -19,6 +21,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -48,6 +51,9 @@ public class DepartmentListController implements Initializable, DataChangeListne
 
 	@FXML
 	private TableColumn<Department, Department> tableColumnEDIT;
+
+	@FXML
+	private TableColumn<Department, Department> tableColumnREMOVE;
 
 	@FXML
 	private Button btNew;
@@ -102,8 +108,10 @@ public class DepartmentListController implements Initializable, DataChangeListne
 		List<Department> list = service.findAll();
 		obsList = FXCollections.observableArrayList(list);
 		tableViewDepartment.setItems(obsList);
-		initEditButtons();//METODO ACRESCENTE UM NOVO BOTÃO EDIT EM CADA LINHA DA TABELA
-		//QUANDO CLICADO NO BOTÃO, É GERADO UM FORMULARIO DE EDIÇÃO
+		initEditButtons();/* METODO ACRESCENTA UM NOVO BOTÃO EDIT EM CADA LINHA DA TABELA,
+		 QUANDO CLICADO NO BOTÃO, É GERADO UM FORMULARIO DE EDIÇÃO*/
+		
+		initRemoveButtons();/*METODO ACRESCENTA BOTÃO DE REMOÇÃO DE DEPARTAMENTO*/
 	}
 
 	@Override
@@ -159,7 +167,7 @@ public class DepartmentListController implements Initializable, DataChangeListne
 		updateTableView();
 	}
 
-	//CRIA BOTÃO EDIT PARA POSSIBILITAR A EDIÇÃO DOS DEPARTAMENTOS	
+	// CRIA BOTÃO EDIT PARA POSSIBILITAR A EDIÇÃO DOS DEPARTAMENTOS
 	private void initEditButtons() {
 		tableColumnEDIT.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 		tableColumnEDIT.setCellFactory(param -> new TableCell<Department, Department>() {
@@ -178,5 +186,41 @@ public class DepartmentListController implements Initializable, DataChangeListne
 			}
 		});
 	}
+	
+	//ADICIONA BOTÃO REMOVE NOS DEPARTAMENTOS EXISTENTES
+	private void initRemoveButtons() {
+		tableColumnREMOVE.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
+		tableColumnREMOVE.setCellFactory(param -> new TableCell<Department, Department>() {
+			private final Button button = new Button("remove");
 
+			@Override
+			protected void updateItem(Department obj, boolean empty) {
+				super.updateItem(obj, empty);
+				if (obj == null) {
+					setGraphic(null);
+					return;
+				}
+				setGraphic(button);
+				button.setOnAction(event -> removeEntity(obj));
+			}
+		});
+	}
+	
+	//É CHAMADO PELO METODO ACIMA
+	private void removeEntity(Department obj) {
+		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "are you sure to delete?");
+		
+		if (result.get() == ButtonType.OK) {//SE O USUARIO CLICAR EM CONFIRMAR AI SIM É DELETADO
+			if (service == null) {
+				throw new IllegalStateException("Service was null");
+			}
+			try {
+				service.remove(obj);
+				updateTableView();
+			}
+			catch (DbIntegrityException e) {
+				Alerts.showAlert("Error removing object", null, e.getMessage(),AlertType.ERROR);
+			}
+		}
+	}
 }
